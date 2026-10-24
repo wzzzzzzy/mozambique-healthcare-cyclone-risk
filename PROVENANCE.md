@@ -5,9 +5,10 @@ file at the listed path in the development repository `wzzzzzzy/InfraCascade`, b
 The files in `ER11E04/` (Chavas et al. wind-profile model) are identical except that the `% email:` comment line
 in each file header was removed; no code changed.
 That code is the code that ran on Sherlock for the manuscript results; its checksums match the run checkouts.
-The water/communication runs used the checkout at commit `e3f527c`, whose `hybrid_multisystem_model.py` and
-`hybrid_power_model.py` lack the line-length fields added later; the later versions used here are
-checked against the stored outputs (see *Reproduction check*).
+Exception: `src/models/hybrid_multisystem_model.py` is the version at commit `e3f527c` of the same repository,
+the checkout that ran the water/communication stage. (The later version on `one-earth` adds line-length
+fields that need metadata the paper's power model does not contain.) It runs with the `one-earth`
+`hybrid_power_model.py`, as checked against the stored outputs.
 
 The job scripts in `workflow/sherlock/` are copies of the original job scripts, edited only so that they find
 the scripts in this layout:
@@ -16,6 +17,29 @@ the scripts in this layout:
 - the water/communication stage uses this repository's code (`MS_CODE`) instead of a separate checkout;
 - `run_solar_cyclone.sbatch` and `run_wind_track_func_hospital.sbatch` change to `$INFRACASCADE_PROJECT_DIR` instead of a home-directory path;
 - `run_figures_t24.sbatch` no longer draws the historical-versus-synthetic figure, which belongs to a separate study.
+
+## Reproduction check
+
+On 2026-10-24 this repository was copied to Sherlock and its job scripts were
+run from scratch for ten synthetic tracks (STORM set 0, tracks 5-9 and 50-54;
+track 52 is one of the representative cyclones in Figure S5):
+
+- `run_line_hazard_v2_chunk.sbatch`: winds computed with the MATLAB wind model, and line-failure probabilities;
+- `run_hybrid_t24_chunk.sbatch`: public-grid electricity, all-grid counterfactual, water and communication, and Figure 2 metrics.
+
+Every output was compared with the stored manuscript results:
+
+| Stage | Files | Differences |
+|---|---|---|
+| Winds | 10 | 0 |
+| Line-failure probabilities (public, all-grid) | 20 | 0 |
+| Public-grid electricity (samples, facilities, summaries) | 30 | 0 |
+| All-grid counterfactual | 30 | 0 |
+| Water and communication (4,990 rows) | 30 | 0 |
+| Figure 2 province metrics | 4 | 0 |
+
+All outputs are identical (maximum absolute difference 0). Cells that are
+empty in the stored outputs are also empty in the reproduced ones.
 
 ## Files
 
@@ -86,7 +110,7 @@ the scripts in this layout:
 | `src/hazard/solar_exposure_gust.py` | `solar_exposure_gust.py` | `ff0a6e4f616597403b4abbdfbc1f90db` |
 | `src/models/dependency_models.py` | `dependency_models.py` | `f607193b4ed72db5681c75b2fc5cc9be` |
 | `src/models/hybrid_figure5_metrics.py` | `hybrid_figure5_metrics.py` | `d21055efbfd72bcda12afb9d137530fa` |
-| `src/models/hybrid_multisystem_model.py` | `hybrid_multisystem_model.py` | `c09ce6b17f362d9e3883f89cb4e61864` |
+| `src/models/hybrid_multisystem_model.py` | `hybrid_multisystem_model.py` at `e3f527c` | `6e8751f0ae6c5d3a23d1610f6a0c9407` |
 | `src/models/hybrid_power_model.py` | `hybrid_power_model.py` | `48937a2c75f3bad73f062a2d660ae0d3` |
 | `src/models/hybrid_sensitivity.py` | `hybrid_sensitivity.py` | `c6d36e8e19c89c0576159b7c0071b1f8` |
 | `src/models/propagate_cyclone_dependencies.py` | `propagate_cyclone_dependencies.py` | `c03290c65a09644778e4a7378249307d` |

@@ -165,8 +165,6 @@ def simulate(args: argparse.Namespace) -> dict[str, object]:
     hospital_service: list[float] = []
     demand_service: list[float] = []
     flow_constrained: list[bool] = []
-    initial_failure_length_km: list[float] = []
-    cascade_failure_length_km: list[float] = []
 
     for _ in range(args.samples):
         failed_global = positive_global[
@@ -179,7 +177,6 @@ def simulate(args: argparse.Namespace) -> dict[str, object]:
         failed[retained_failed] = True
         state = model.solve_sample_state(failed) if np.any(failed) else intact
         result = state.result
-        length_failures = model.length_failures(failed_global, failed, state)
 
         hospital_failure_sum[model.hospital_modeled] += result.hospital_failure[
             model.hospital_modeled
@@ -191,8 +188,6 @@ def simulate(args: argparse.Namespace) -> dict[str, object]:
             result.served_mw / result.demand_mw if result.demand_mw else 1.0
         )
         flow_constrained.append(result.flow_constrained_components > 0)
-        initial_failure_length_km.append(length_failures.initial_km)
-        cascade_failure_length_km.append(length_failures.cascade_km)
 
         if dependencies is not None:
             downstream_state = component_state(
@@ -237,7 +232,7 @@ def simulate(args: argparse.Namespace) -> dict[str, object]:
             outputs[service] = str(path)
 
     summary: dict[str, object] = {
-        "schema_version": 2,
+        "schema_version": 1,
         "model_version": MODEL_VERSION,
         "power_scenario": POWER_SCENARIO,
         "storm_folder": args.storm_folder,
@@ -279,18 +274,6 @@ def simulate(args: argparse.Namespace) -> dict[str, object]:
             ),
             "mean_unserved_demand_fraction": float(1.0 - np.mean(demand_service)),
             "samples_with_flow_constraint": float(np.mean(flow_constrained)),
-            "mean_initial_failure_length_km": float(
-                np.mean(initial_failure_length_km)
-            ),
-            "mean_cascade_failure_length_km": float(
-                np.mean(cascade_failure_length_km)
-            ),
-            "cascade_initial_ratio": float(
-                np.mean(cascade_failure_length_km)
-                / np.mean(initial_failure_length_km)
-                if np.mean(initial_failure_length_km) > 0.0
-                else 0.0
-            ),
         },
         "missing_data_policy": {
             "electricity": "-1 for the nine hospitals outside the retained active grid",
