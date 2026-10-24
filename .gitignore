@@ -1,0 +1,21 @@
+# Data are obtained separately (see data/README.md)
+/SARA_processed/
+/network_save/
+data/*
+!data/README.md
+*.xlsx
+*.tif
+*.npz
+*.pickle
+*.gpkg
+*.csv.gz
+
+# Outputs and caches
+/outputs/
+/figures/
+/logs/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+*_executed.ipynb
+.DS_Store
